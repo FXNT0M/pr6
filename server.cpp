@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <random>
+#include <time.h>
 
 #define BUFFER_SIZE 1024
 
@@ -49,10 +50,10 @@ int main(int argc, char* argv[]) {
     std::cout << "Сервер запущен на порту " << port << std::endl;
 
     // Генерация случайного числа
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distr(1, 10);
-    int secret_number = distr(gen);
+    srand(time(NULL));   // Initialization, should only be called once.
+    int min_num = 0;
+    int max_num = 10;
+    int secret_number = rand() % (max_num - min_num + 1) + min_num; 
 
     while (true) {
         std::cout << "Ожидание подключения клиента..." << std::endl;
@@ -67,7 +68,8 @@ int main(int argc, char* argv[]) {
 
         while (true) {
             memset(buffer, 0, BUFFER_SIZE);
-            int valread = read(new_socket, buffer, BUFFER_SIZE);
+            // int valread = read(new_socket, buffer, BUFFER_SIZE);
+            int valread = recv(new_socket, buffer, BUFFER_SIZE, 0);
             if (valread <= 0) {
                 std::cout << "Клиент отключен: " << inet_ntoa(address.sin_addr) << std::endl;
                 break;
@@ -88,7 +90,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        secret_number = distr(gen); // Генерация нового числа
+        secret_number = rand() % (max_num - min_num + 1) + min_num;  // Генерация нового числа
         close(new_socket);
     }
 
